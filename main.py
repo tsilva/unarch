@@ -26,7 +26,6 @@ def extract_zip(zip_file, output_dir, passwords=None):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    print(f"Starting extraction for: {zip_file}")
     with zipfile.ZipFile(zip_file, 'r') as zf:
         members = zf.infolist()
         extracted = False
@@ -90,7 +89,6 @@ def main():
     passwords = load_passwords(args.passwords) if args.passwords else None
     for zip_path in find_zip_files(root_path):
         zip_dir = os.path.splitext(zip_path)[0]
-        print(f"Found zip: {zip_path} -> extracting to {zip_dir}")
         extract_zip(zip_path, zip_dir, passwords)
 
 if __name__ == "__main__":
