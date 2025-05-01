@@ -3,6 +3,7 @@ import re
 import argparse
 from tqdm import tqdm
 import zipfile
+import py7zr
 
 def sanitize_filename(filename):
     # Remove directories and illegal characters
@@ -10,11 +11,11 @@ def sanitize_filename(filename):
     filename = filename.replace("..", "")  # extra safety
     return os.path.basename(filename)
 
-def find_zip_files(root_path):
-    """Recursively yield paths to all .zip files under root_path."""
+def find_archive_files(root_path):
+    """Recursively yield paths to all .zip and .7z files under root_path."""
     for dirpath, _, filenames in os.walk(root_path):
         for fname in filenames:
-            if fname.lower().endswith('.zip'):
+            if fname.lower().endswith('.zip') or fname.lower().endswith('.7z'):
                 yield os.path.join(dirpath, fname)
 
 def load_passwords(password_file):
@@ -72,24 +73,60 @@ def extract_zip(zip_file, output_dir, passwords=None):
         else:
             print(f"Extracted {len(members)} items to '{output_dir}'.")
 
+def extract_7z(archive_file, output_dir, passwords=None):
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    extracted = False
+    if not passwords:
+        try:
+            with py7zr.SevenZipFile(archive_file, mode='r') as archive:
+                archive.extractall(path=output_dir)
+            extracted = True
+        except py7zr.exceptions.PasswordRequired:
+            pass
+        except py7zr.exceptions.Bad7zFile:
+            pass
+    else:
+        for pwd in passwords:
+            try:
+                with py7zr.SevenZipFile(archive_file, mode='r', password=pwd) as archive:
+                    archive.extractall(path=output_dir)
+                extracted = True
+                break
+            except py7zr.exceptions.PasswordRequired:
+                continue
+            except py7zr.exceptions.Bad7zFile:
+                continue
+            except py7zr.exceptions.InvalidPassword:
+                continue
+    if not extracted:
+        print(f"Could not extract '{archive_file}': no valid password found.")
+    else:
+        print(f"Extracted '{archive_file}' to '{output_dir}'.")
+
 def main():
     parser = argparse.ArgumentParser(
-        description="Recursively extract all files from .zip archives under a given path."
+        description="Recursively extract all files from .zip and .7z archives under a given path."
     )
     parser.add_argument(
         "path",
-        help="Root directory or file to search for .zip files"
+        help="Root directory or file to search for .zip/.7z files"
     )
     parser.add_argument(
         "--passwords",
-        help="Path to a file containing passwords (one per line) to try for encrypted zip files"
+        help="Path to a file containing passwords (one per line) to try for encrypted archives"
     )
     args = parser.parse_args()
     root_path = args.path
     passwords = load_passwords(args.passwords) if args.passwords else None
-    for zip_path in find_zip_files(root_path):
-        zip_dir = os.path.splitext(zip_path)[0]
-        extract_zip(zip_path, zip_dir, passwords)
+    for archive_path in find_archive_files(root_path):
+        archive_dir = os.path.splitext(archive_path)[0]
+        ext = os.path.splitext(archive_path)[1].lower()
+        if ext == ".zip":
+            extract_zip(archive_path, archive_dir, passwords)
+        elif ext == ".7z":
+            extract_7z(archive_path, archive_dir, passwords)
 
 if __name__ == "__main__":
     main()
