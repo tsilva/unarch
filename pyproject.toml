@@ -11,7 +11,8 @@ authors = [
 ]
 dependencies = [
     "tqdm",
-    "py7zr"
+    "py7zr",
+    "lzma"
 ]
 requires-python = ">=3.7"
 

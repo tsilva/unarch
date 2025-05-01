@@ -4,6 +4,7 @@ import argparse
 from tqdm import tqdm
 import zipfile
 import py7zr
+import lzma
 
 def sanitize_filename(filename):
     # Remove directories and illegal characters
@@ -83,9 +84,9 @@ def extract_7z(archive_file, output_dir, passwords=None):
             with py7zr.SevenZipFile(archive_file, mode='r') as archive:
                 archive.extractall(path=output_dir)
             extracted = True
-        except py7zr.exceptions.PasswordRequired:
+        except (py7zr.exceptions.PasswordRequired, py7zr.exceptions.Bad7zFile, lzma.LZMAError):
             pass
-        except py7zr.exceptions.Bad7zFile:
+        except Exception:
             pass
     else:
         for pwd in passwords:
@@ -94,14 +95,12 @@ def extract_7z(archive_file, output_dir, passwords=None):
                     archive.extractall(path=output_dir)
                 extracted = True
                 break
-            except py7zr.exceptions.PasswordRequired:
+            except (py7zr.exceptions.PasswordRequired, py7zr.exceptions.Bad7zFile, lzma.LZMAError):
                 continue
-            except py7zr.exceptions.Bad7zFile:
-                continue
-            except py7zr.exceptions.InvalidPassword:
+            except Exception:
                 continue
     if not extracted:
-        print(f"Could not extract '{archive_file}': no valid password found.")
+        print(f"Could not extract '{archive_file}': no valid password found or archive is corrupt.")
     else:
         print(f"Extracted '{archive_file}' to '{output_dir}'.")
 
