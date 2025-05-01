@@ -22,25 +22,6 @@ def load_passwords(password_file):
     with open(password_file, 'r', encoding='utf-8') as f:
         return [line.strip() for line in f if line.strip()]
 
-def try_extract_member(zf, member, out_path, passwords):
-    """Try to extract a zip member using a list of passwords (or no password)."""
-    if not passwords:
-        # Try without password
-        with open(out_path, 'wb') as f:
-            f.write(zf.read(member))
-        return True
-    for pwd in passwords:
-        try:
-            with open(out_path, 'wb') as f:
-                f.write(zf.read(member, pwd.encode('utf-8')))
-            return True
-        except RuntimeError as e:
-            # Wrong password or not encrypted
-            continue
-        except zipfile.BadZipFile:
-            continue
-    return False
-
 def extract_zip(zip_file, output_dir, passwords=None):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -48,28 +29,49 @@ def extract_zip(zip_file, output_dir, passwords=None):
     print(f"Starting extraction for: {zip_file}")
     with zipfile.ZipFile(zip_file, 'r') as zf:
         members = zf.infolist()
-        for member in tqdm(members, desc=f"Extracting {os.path.basename(zip_file)}"):
-            # Skip directories
-            if member.is_dir():
-                continue
-
-            # Construct the full output path, preserving folder structure
-            safe_member_path = os.path.normpath(member.filename)
-            # Prevent path traversal
-            if os.path.isabs(safe_member_path) or safe_member_path.startswith(".."):
-                continue
-
-            out_path = os.path.join(output_dir, safe_member_path)
-            out_dir = os.path.dirname(out_path)
-            if not os.path.exists(out_dir):
-                os.makedirs(out_dir)
-
-            # Try to extract with passwords if provided
-            success = try_extract_member(zf, member, out_path, passwords)
-            if not success:
-                print(f"Failed to extract '{member.filename}' from '{zip_file}' (no valid password found).")
-
-    print(f"Extracted {len(members)} items to '{output_dir}'.")
+        extracted = False
+        if not passwords:
+            # No passwords provided, extract directly
+            for member in tqdm(members, desc=f"Extracting {os.path.basename(zip_file)}"):
+                if member.is_dir():
+                    continue
+                safe_member_path = os.path.normpath(member.filename)
+                if os.path.isabs(safe_member_path) or safe_member_path.startswith(".."):
+                    continue
+                out_path = os.path.join(output_dir, safe_member_path)
+                out_dir = os.path.dirname(out_path)
+                if not os.path.exists(out_dir):
+                    os.makedirs(out_dir)
+                with open(out_path, 'wb') as f:
+                    f.write(zf.read(member))
+            extracted = True
+        else:
+            # Try each password for the whole zip
+            for pwd in passwords:
+                try:
+                    for member in tqdm(members, desc=f"Extracting {os.path.basename(zip_file)}", leave=False):
+                        if member.is_dir():
+                            continue
+                        safe_member_path = os.path.normpath(member.filename)
+                        if os.path.isabs(safe_member_path) or safe_member_path.startswith(".."):
+                            continue
+                        out_path = os.path.join(output_dir, safe_member_path)
+                        out_dir = os.path.dirname(out_path)
+                        if not os.path.exists(out_dir):
+                            os.makedirs(out_dir)
+                        with open(out_path, 'wb') as f:
+                            f.write(zf.read(member, pwd.encode('utf-8')))
+                    extracted = True
+                    break  # Stop trying passwords after success
+                except RuntimeError:
+                    # Wrong password, try next
+                    continue
+                except zipfile.BadZipFile:
+                    continue
+        if not extracted:
+            print(f"Could not extract '{zip_file}': no valid password found.")
+        else:
+            print(f"Extracted {len(members)} items to '{output_dir}'.")
 
 def main():
     parser = argparse.ArgumentParser(
