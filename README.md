@@ -13,7 +13,7 @@ Archive Extractor is a command-line tool for recursively finding and extracting 
 ## 🚀 Installation
 
 ```bash
-pipx install . --force
+uv tool install .
 ```
 
 ## 🛠️ Usage
