@@ -70,9 +70,9 @@ def extract_zip(zip_file, output_dir, passwords=None):
                 except zipfile.BadZipFile:
                     continue
         if not extracted:
-            print(f"Could not extract '{zip_file}': no valid password found.")
+            print(f"❌ Could not extract '{zip_file}': no valid password found.")
         else:
-            print(f"Extracted {len(members)} items to '{output_dir}'.")
+            print(f"✅ Extracted {len(members)} items to '{output_dir}'.")
 
 def extract_7z(archive_file, output_dir, passwords=None):
     if not os.path.exists(output_dir):
@@ -100,9 +100,9 @@ def extract_7z(archive_file, output_dir, passwords=None):
             except Exception:
                 continue
     if not extracted:
-        print(f"Could not extract '{archive_file}': no valid password found or archive is corrupt.")
+        print(f"❌ Could not extract '{archive_file}': no valid password found or archive is corrupt.")
     else:
-        print(f"Extracted '{archive_file}' to '{output_dir}'.")
+        print(f"✅ Extracted '{archive_file}' to '{output_dir}'.")
 
 def main():
     parser = argparse.ArgumentParser(
