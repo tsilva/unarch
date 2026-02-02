@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "archive-extractor"
-version = "0.1.2"
+version = "0.1.3"
 description = "📦 Recursively extract ZIP and 7z archives from directory trees, with password-cracking support"
 authors = [
     { name = "Tiago Silva", email = "eng.tiago.silva@gmail.com" }
