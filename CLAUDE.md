@@ -4,24 +4,28 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Archive Extractor is a command-line utility that recursively searches for and extracts ZIP and 7z archives within a directory tree. It handles password-protected archives, preserves folder structures, and prevents path traversal attacks.
+Archive Extractor is a Python library and CLI tool that recursively searches for and extracts ZIP and 7z archives within a directory tree. It handles password-protected archives, preserves folder structures, and prevents path traversal attacks.
 
 ## Architecture
 
-This is a single-module Python CLI tool (`main.py`) with a straightforward architecture:
+This is a Python package (`archive_extractor/`) with the following structure:
 
-- **Entry point**: `main()` function parses arguments and orchestrates archive discovery and extraction
-- **Archive discovery**: `find_archive_files()` walks the directory tree to locate .zip and .7z files
-- **Extraction logic**: Separate functions for ZIP (`extract_zip()`) and 7z (`extract_7z()`) formats
-- **Password handling**: `load_passwords()` reads password lists; extraction functions attempt each password sequentially until success
-- **Security**: `sanitize_filename()` prevents directory traversal; extraction functions validate paths with `os.path.normpath()` and reject absolute paths or `..` sequences
+- **`archive_extractor/__init__.py`**: Public API and CLI entry point
+  - `extract_archives()`: Main library function for programmatic use
+  - `main()`: CLI entry point for command-line usage
+- **`archive_extractor/core.py`**: Core extraction logic
+  - `sanitize_filename()`: Path security
+  - `find_archive_files()`: Archive discovery generator
+  - `load_passwords()`: Password file parsing
+  - `extract_zip_archive()`: ZIP extraction with password support
+  - `extract_7z_archive()`: 7z extraction with password support
 
 ## Key Dependencies
 
 - `zipfile` (stdlib): ZIP extraction
 - `py7zr`: 7z archive extraction
 - `tqdm`: Progress bars during extraction
-- `lzma`: Referenced in exception handling for 7z corruption detection (note: currently imported but not directly used due to py7zr wrapping it)
+- `lzma` (stdlib): Referenced in exception handling for 7z corruption detection
 
 ## Development Commands
 
@@ -32,13 +36,19 @@ uv tool install .
 
 **Run directly**:
 ```bash
-python main.py /path/to/search
-python main.py /path/to/search --passwords passwords.txt
+python -m archive_extractor /path/to/search
+python -m archive_extractor /path/to/search --passwords passwords.txt
 ```
 
 **Install in editable mode for development**:
 ```bash
 uv pip install -e .
+```
+
+**Library usage**:
+```python
+from archive_extractor import extract_archives
+results = extract_archives("/path/to/search", passwords=["pass1", "pass2"])
 ```
 
 ## Important Implementation Notes
@@ -47,7 +57,8 @@ uv pip install -e .
 - Path safety is enforced at extraction time: absolute paths and paths containing `..` are skipped
 - For password-protected archives, the tool tries each password in sequence and stops at the first successful extraction
 - Error handling is intentionally broad (catching generic `Exception`) to ensure the tool continues processing other archives even if one fails
-- The `lzma.LZMAError` exception is caught to handle corrupt 7z archives, though `lzma` is no longer a direct dependency (handled internally by py7zr)
+- The `lzma.LZMAError` exception is caught to handle corrupt 7z archives
+- The `extract_archives()` function returns a dictionary mapping archive paths to extraction counts (-1 for failures)
 
 ## README Requirements
 
