@@ -7,7 +7,7 @@
   [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
   [![PyPI](https://img.shields.io/pypi/v/archive-extractor)](https://pypi.org/project/archive-extractor/)
 
-  **📦 Recursively extract ZIP and 7z archives from directory trees, with password-cracking support**
+  **📦 Recursively extract ZIP and 7z archives from directory trees, with password support 🔓**
 
   [Installation](#installation) · [Usage](#usage) · [Security](#security)
 </div>
@@ -21,7 +21,7 @@ Ideal for bulk extraction tasks or forensic analysis where archives may be deepl
 ## Features
 
 - **🔍 Recursive discovery** - Finds all `.zip` and `.7z` files in a directory tree
-- **🔓 Password cracking** - Tries passwords from a wordlist against encrypted archives
+- **🔓 Password list support** - Tries passwords from a user-provided wordlist
 - **🛡️ Path traversal protection** - Sanitizes filenames and rejects unsafe paths
 - **📊 Progress indicators** - Shows extraction progress with tqdm
 - **📁 Preserves structure** - Extracts each archive into its own named folder
