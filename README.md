@@ -6,6 +6,7 @@
   [![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://www.python.org/)
   [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
   [![PyPI](https://img.shields.io/pypi/v/archive-extractor)](https://pypi.org/project/archive-extractor/)
+  [![CI](https://github.com/tsilva/archive-extractor/actions/workflows/release.yml/badge.svg)](https://github.com/tsilva/archive-extractor/actions/workflows/release.yml)
 
   **📦 Recursively extract ZIP and 7z archives from directory trees, with password support 🔓**
 
