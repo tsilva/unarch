@@ -9,11 +9,18 @@ description = "Recursively extract ZIP and 7z archives from directory trees, wit
 authors = [
     { name = "Tiago Silva", email = "eng.tiago.silva@gmail.com" }
 ]
+license = "MIT"
+readme = "README.md"
 dependencies = [
     "tqdm",
     "py7zr"
 ]
 requires-python = ">=3.12"
+
+[project.urls]
+Homepage = "https://github.com/tsilva/archive-extractor"
+Repository = "https://github.com/tsilva/archive-extractor"
+Issues = "https://github.com/tsilva/archive-extractor/issues"
 
 [project.scripts]
 archive-extractor = "archive_extractor:main"
