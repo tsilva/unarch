@@ -3,14 +3,14 @@
 
   # archive-extractor
 
-  [![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://www.python.org/)
+  [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
   [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
   [![PyPI](https://img.shields.io/pypi/v/archive-extractor)](https://pypi.org/project/archive-extractor/)
   [![CI](https://github.com/tsilva/archive-extractor/actions/workflows/release.yml/badge.svg)](https://github.com/tsilva/archive-extractor/actions/workflows/release.yml)
 
   **📦 Recursively extract ZIP and 7z archives from directory trees, with password support 🔓**
 
-  [Installation](#installation) · [Usage](#usage) · [Security](#security)
+  [Installation](#installation) · [Usage](#usage) · [Security](#security) · [Changelog](CHANGELOG.md)
 </div>
 
 ## Overview
@@ -24,48 +24,70 @@ Ideal for bulk extraction tasks or forensic analysis where archives may be deepl
 - **🔍 Recursive discovery** - Finds all `.zip` and `.7z` files in a directory tree
 - **🔓 Password list support** - Tries passwords from a user-provided wordlist
 - **🛡️ Path traversal protection** - Sanitizes filenames and rejects unsafe paths
-- **📊 Progress indicators** - Shows extraction progress with tqdm
+- **📊 Rich progress indicators** - Shows styled extraction progress and results tables
 - **📁 Preserves structure** - Extracts each archive into its own named folder
 - **📚 Library API** - Use programmatically in your Python projects
 
 ## Installation
 
 ```bash
-uv tool install .
+pip install archive-extractor
 ```
 
-Or install in development mode:
+Or with [pipx](https://pipx.pypa.io/) (recommended for CLI tools):
 
 ```bash
-uv pip install -e .
+pipx install archive-extractor
+```
+
+Or with [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv tool install archive-extractor
 ```
 
 ## Usage
 
 ### 🖥️ CLI
 
-Extract all archives under a directory:
-
 ```bash
 archive-extractor /path/to/search
 ```
 
-Extract with a password list (one password per line):
+You can also run it as a Python module:
 
 ```bash
+python -m archive_extractor /path/to/search
+```
+
+#### CLI Reference
+
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--passwords FILE` | | Password wordlist (one per line) for encrypted archives |
+| `--output-dir DIR` | | Base directory for extraction output |
+| `--dry-run` | `-n` | List archives found without extracting |
+| `--verbose` | `-v` | Print each file path during extraction |
+| `--quiet` | `-q` | Suppress all output |
+| `--version` | `-V` | Show installed version and exit |
+
+#### Examples
+
+```bash
+# Preview archives before extracting
+archive-extractor --dry-run /path/to/search
+
+# Extract with a password wordlist
 archive-extractor /path/to/search --passwords passwords.txt
-```
 
-Extract to a custom output directory:
-
-```bash
+# Extract to a custom output directory
 archive-extractor /path/to/search --output-dir /path/to/output
-```
 
-Quiet mode (suppress progress output):
+# Verbose extraction showing each file
+archive-extractor -v /path/to/search
 
-```bash
-archive-extractor /path/to/search --quiet
+# Quiet mode (no output)
+archive-extractor -q /path/to/search
 ```
 
 ### 📚 Library
@@ -73,7 +95,14 @@ archive-extractor /path/to/search --quiet
 Use archive-extractor programmatically in your Python projects:
 
 ```python
-from archive_extractor import extract_archives
+from archive_extractor import extract_archives, list_archives, __version__
+
+# Print installed version
+print(__version__)  # e.g. "0.3.0"
+
+# List archives without extracting
+archives = list_archives("/path/to/search")
+# [{"path": "/path/to/a.zip", "type": "zip", "member_count": 42}, ...]
 
 # Extract all archives in a directory
 results = extract_archives("/path/to/search")
@@ -95,9 +124,12 @@ The `extract_archives()` function returns a dictionary mapping archive paths to 
 
 ### Output
 
-- Archives extract to folders named after the archive file (without extension)
-- Success: `Extracted 'archive.7z' to 'archive'.`
-- Failure: `Could not extract 'archive.zip': no valid password found or archive is corrupt.`
+Archives extract to folders named after the archive file (without extension). The CLI prints colour-coded results:
+
+- Success: `Extracted 'archive.7z' to 'archive' (18 files)`
+- Failure: `Failed 'encrypted.zip' — no valid password or corrupt archive`
+
+A summary table is shown after all archives are processed.
 
 ## Security
 
