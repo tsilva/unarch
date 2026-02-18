@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "archive-extractor"
-version = "0.3.0"
-description = "Recursively extract ZIP and 7z archives from directory trees, with password list support"
+version = "0.4.0"
+description = "Recursively extract ZIP, 7z, tar, and RAR archives from directory trees, with password list support"
 authors = [
     { name = "Tiago Silva", email = "eng.tiago.silva@gmail.com" }
 ]
@@ -15,9 +15,10 @@ dependencies = [
     "rich>=13.0",
     "rich-argparse>=1.4",
     "py7zr",
+    "rarfile",
 ]
 requires-python = ">=3.10"
-keywords = ["archive", "extract", "zip", "7z", "recursive", "password", "cli"]
+keywords = ["archive", "extract", "zip", "7z", "tar", "rar", "recursive", "password", "cli"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Console",
@@ -40,3 +41,6 @@ Issues = "https://github.com/tsilva/archive-extractor/issues"
 
 [project.scripts]
 archive-extractor = "archive_extractor:main"
+
+[dependency-groups]
+dev = ["pytest>=8.0"]
