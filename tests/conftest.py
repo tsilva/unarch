@@ -1,4 +1,4 @@
-"""Shared test fixtures for archive-extractor tests."""
+"""Shared test fixtures for archex tests."""
 
 import io
 import os

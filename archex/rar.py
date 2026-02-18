@@ -1,4 +1,4 @@
-"""RAR archive extraction for archive-extractor."""
+"""RAR archive extraction for archex."""
 
 import os
 

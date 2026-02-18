@@ -1,10 +1,10 @@
-"""Tests for archive_extractor.core module."""
+"""Tests for archex.core module."""
 
 import os
 
 import pytest
 
-from archive_extractor.core import validate_member_path, find_archive_files, load_passwords
+from archex.core import validate_member_path, find_archive_files, load_passwords
 
 
 class TestValidateMemberPath:

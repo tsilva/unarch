@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `python -m archive_extractor` now works via new `__main__.py` entry point
+- `python -m archex` now works via new `__main__.py` entry point
 - `__version__` attribute for runtime version introspection
 - `--version` / `-V` flag to display the installed version
 - `--dry-run` / `-n` flag to list archives without extracting
@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Replaced `tqdm` progress bars with `rich.progress` for consistent styling
-- Fixed installation instructions: `pip install archive-extractor` is now the primary method
+- Fixed installation instructions: `pip install archex` is now the primary method
 - Fixed project description: "password-cracking" → "password list support"
 - Relaxed Python requirement from `>=3.12` to `>=3.10`
 

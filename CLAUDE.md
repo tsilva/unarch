@@ -8,24 +8,24 @@ Archive Extractor is a Python library and CLI tool that recursively searches for
 
 ## Architecture
 
-This is a Python package (`archive_extractor/`) with the following structure:
+This is a Python package (`archex/`) with the following structure:
 
-- **`archive_extractor/__init__.py`**: Public API, CLI entry point, and `FORMAT_HANDLERS` registry
+- **`archex/__init__.py`**: Public API, CLI entry point, and `FORMAT_HANDLERS` registry
   - `FORMAT_HANDLERS`: Dict mapping file extensions to extractor callables
   - `extract_archives()`: Main library function for programmatic use
   - `list_archives()`: Dry-run archive discovery (no extraction)
   - `__version__`: Package version string from importlib.metadata
   - `main()`: CLI entry point for command-line usage
-- **`archive_extractor/__main__.py`**: Enables `python -m archive_extractor`
-- **`archive_extractor/core.py`**: Shared utilities
+- **`archex/__main__.py`**: Enables `python -m archex`
+- **`archex/core.py`**: Shared utilities
   - `validate_member_path()`: Unified path traversal prevention (used by all extractors)
   - `find_archive_files()`: Archive discovery generator (uses FORMAT_HANDLERS keys)
   - `load_passwords()`: Password file parsing
-- **`archive_extractor/zip.py`**: ZIP extractor — password support, per-member validation
-- **`archive_extractor/sevenz.py`**: 7z extractor — two-pass (list+validate, then extract), password support
-- **`archive_extractor/tar.py`**: Tar extractor — .tar/.tar.gz/.tgz/.tar.bz2/.tbz2/.tar.xz/.txz, symlink skipping
-- **`archive_extractor/rar.py`**: RAR extractor — requires `rarfile` package + `unrar` binary, password support
-- **`archive_extractor/py.typed`**: PEP 561 marker for type-checker support
+- **`archex/zip.py`**: ZIP extractor — password support, per-member validation
+- **`archex/sevenz.py`**: 7z extractor — two-pass (list+validate, then extract), password support
+- **`archex/tar.py`**: Tar extractor — .tar/.tar.gz/.tgz/.tar.bz2/.tbz2/.tar.xz/.txz, symlink skipping
+- **`archex/rar.py`**: RAR extractor — requires `rarfile` package + `unrar` binary, password support
+- **`archex/py.typed`**: PEP 561 marker for type-checker support
 
 ## Key Dependencies
 
@@ -73,10 +73,10 @@ uv tool install .
 
 **Run directly**:
 ```bash
-python -m archive_extractor /path/to/search
-python -m archive_extractor /path/to/search --passwords passwords.txt
-python -m archive_extractor --dry-run /path/to/search
-python -m archive_extractor -v /path/to/search
+python -m archex /path/to/search
+python -m archex /path/to/search --passwords passwords.txt
+python -m archex --dry-run /path/to/search
+python -m archex -v /path/to/search
 ```
 
 **Install in editable mode for development**:
@@ -86,7 +86,7 @@ uv pip install -e .
 
 **Library usage**:
 ```python
-from archive_extractor import extract_archives, list_archives, __version__
+from archex import extract_archives, list_archives, __version__
 print(__version__)
 archives = list_archives("/path/to/search")
 results = extract_archives("/path/to/search", passwords=["pass1", "pass2"])
