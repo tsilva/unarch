@@ -12,19 +12,24 @@ This is a Python package (`archive_extractor/`) with the following structure:
 
 - **`archive_extractor/__init__.py`**: Public API and CLI entry point
   - `extract_archives()`: Main library function for programmatic use
+  - `list_archives()`: Dry-run archive discovery (no extraction)
+  - `__version__`: Package version string from importlib.metadata
   - `main()`: CLI entry point for command-line usage
+- **`archive_extractor/__main__.py`**: Enables `python -m archive_extractor`
 - **`archive_extractor/core.py`**: Core extraction logic
   - `sanitize_filename()`: Path security
   - `find_archive_files()`: Archive discovery generator
   - `load_passwords()`: Password file parsing
-  - `extract_zip_archive()`: ZIP extraction with password support
-  - `extract_7z_archive()`: 7z extraction with password support
+  - `extract_zip_archive()`: ZIP extraction with password and verbose support
+  - `extract_7z_archive()`: 7z extraction with password and verbose support
+- **`archive_extractor/py.typed`**: PEP 561 marker for type-checker support
 
 ## Key Dependencies
 
 - `zipfile` (stdlib): ZIP extraction
 - `py7zr`: 7z archive extraction
-- `tqdm`: Progress bars during extraction
+- `rich`: Progress bars, styled output, and results tables
+- `rich-argparse`: Rich-formatted argparse help text
 - `lzma` (stdlib): Referenced in exception handling for 7z corruption detection
 
 ## Development Commands
@@ -38,6 +43,8 @@ uv tool install .
 ```bash
 python -m archive_extractor /path/to/search
 python -m archive_extractor /path/to/search --passwords passwords.txt
+python -m archive_extractor --dry-run /path/to/search
+python -m archive_extractor -v /path/to/search
 ```
 
 **Install in editable mode for development**:
@@ -47,7 +54,9 @@ uv pip install -e .
 
 **Library usage**:
 ```python
-from archive_extractor import extract_archives
+from archive_extractor import extract_archives, list_archives, __version__
+print(__version__)
+archives = list_archives("/path/to/search")
 results = extract_archives("/path/to/search", passwords=["pass1", "pass2"])
 ```
 

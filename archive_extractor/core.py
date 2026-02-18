@@ -6,7 +6,10 @@ import zipfile
 import lzma
 
 import py7zr
-from tqdm import tqdm
+from rich.console import Console
+from rich.progress import track
+
+console = Console()
 
 
 def sanitize_filename(filename: str) -> str:
@@ -61,7 +64,8 @@ def extract_zip_archive(
     zip_file: str,
     output_dir: str,
     passwords: list[str] | None = None,
-    show_progress: bool = True
+    show_progress: bool = True,
+    verbose: bool = False,
 ) -> int:
     """Extract a ZIP archive to the specified directory.
 
@@ -69,7 +73,8 @@ def extract_zip_archive(
         zip_file: Path to the ZIP file.
         output_dir: Directory to extract files to.
         passwords: Optional list of passwords to try for encrypted archives.
-        show_progress: Whether to show tqdm progress bar.
+        show_progress: Whether to show rich progress bar.
+        verbose: Whether to print each extracted file path.
 
     Returns:
         Number of files extracted, or -1 on failure.
@@ -83,7 +88,7 @@ def extract_zip_archive(
 
         def extract_members(pwd_bytes=None):
             nonlocal extracted_count
-            iterator = tqdm(members, desc=f"Extracting {os.path.basename(zip_file)}", leave=False) if show_progress else members
+            iterator = track(members, description=f"Extracting {os.path.basename(zip_file)}", transient=True) if show_progress else members
             for member in iterator:
                 if member.is_dir():
                     continue
@@ -97,6 +102,8 @@ def extract_zip_archive(
                 with open(out_path, 'wb') as f:
                     f.write(zf.read(member, pwd_bytes))
                 extracted_count += 1
+                if verbose:
+                    console.print(f"  [dim]{safe_member_path}[/dim]")
 
         if not passwords:
             try:
@@ -121,7 +128,8 @@ def extract_7z_archive(
     archive_file: str,
     output_dir: str,
     passwords: list[str] | None = None,
-    show_progress: bool = True
+    show_progress: bool = True,
+    verbose: bool = False,
 ) -> int:
     """Extract a 7z archive to the specified directory.
 
@@ -129,7 +137,8 @@ def extract_7z_archive(
         archive_file: Path to the 7z file.
         output_dir: Directory to extract files to.
         passwords: Optional list of passwords to try for encrypted archives.
-        show_progress: Whether to show tqdm progress bar (currently unused for 7z).
+        show_progress: Whether to show progress (currently unused for 7z).
+        verbose: Whether to print each extracted file path.
 
     Returns:
         Number of files extracted, or -1 on failure.
@@ -139,8 +148,12 @@ def extract_7z_archive(
 
     def try_extract(password=None):
         with py7zr.SevenZipFile(archive_file, mode='r', password=password) as archive:
+            names = archive.getnames()
             archive.extractall(path=output_dir)
-            return len(archive.getnames())
+            if verbose:
+                for name in names:
+                    console.print(f"  [dim]{name}[/dim]")
+            return len(names)
 
     if not passwords:
         try:
