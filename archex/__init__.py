@@ -1,13 +1,13 @@
-"""Archive Extractor - Recursively extract ZIP, 7z, tar, and RAR archives.
+"""archex - Recursively extract ZIP, 7z, tar, and RAR archives.
 
 CLI Usage:
-    archive-extractor /path/to/search
-    archive-extractor /path/to/search --passwords passwords.txt
-    archive-extractor --dry-run /path/to/search
-    archive-extractor -v /path/to/search
+    archex /path/to/search
+    archex /path/to/search --passwords passwords.txt
+    archex --dry-run /path/to/search
+    archex -v /path/to/search
 
 Library Usage:
-    from archive_extractor import extract_archives, list_archives
+    from archex import extract_archives, list_archives
 
     # Extract all archives in a directory
     results = extract_archives("/path/to/search")
@@ -44,7 +44,7 @@ from .tar import extract_tar_archive
 from .rar import extract_rar_archive
 
 try:
-    __version__ = version("archive-extractor")
+    __version__ = version("archex")
 except PackageNotFoundError:
     __version__ = "0.0.0-dev"
 
@@ -206,10 +206,10 @@ def extract_archives(
 
 
 def main():
-    """CLI entry point for archive-extractor."""
+    """CLI entry point for archex."""
     supported = ", ".join(sorted(FORMAT_HANDLERS.keys()))
     parser = argparse.ArgumentParser(
-        prog="archive-extractor",
+        prog="archex",
         description=f"Recursively extract archives ({supported}) under a given path.",
         formatter_class=RichHelpFormatter,
     )

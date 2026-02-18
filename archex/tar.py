@@ -1,4 +1,4 @@
-"""Tar archive extraction for archive-extractor."""
+"""Tar archive extraction for archex."""
 
 import os
 import tarfile

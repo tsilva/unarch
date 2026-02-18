@@ -4,8 +4,8 @@ import os
 
 import pytest
 
-from archive_extractor.zip import extract_zip_archive
-from archive_extractor.tar import extract_tar_archive
+from archex.zip import extract_zip_archive
+from archex.tar import extract_tar_archive
 
 
 class TestZipPathTraversal:

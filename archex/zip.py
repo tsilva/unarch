@@ -1,4 +1,4 @@
-"""ZIP archive extraction for archive-extractor."""
+"""ZIP archive extraction for archex."""
 
 import os
 import zipfile

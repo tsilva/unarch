@@ -4,7 +4,7 @@ import os
 
 import pytest
 
-from archive_extractor.sevenz import extract_7z_archive
+from archex.sevenz import extract_7z_archive
 
 
 class TestSevenZExtraction:

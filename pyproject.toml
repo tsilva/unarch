@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "archive-extractor"
+name = "archex"
 version = "0.4.0"
 description = "Recursively extract ZIP, 7z, tar, and RAR archives from directory trees, with password list support"
 authors = [
@@ -35,12 +35,12 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/tsilva/archive-extractor"
-Repository = "https://github.com/tsilva/archive-extractor"
-Issues = "https://github.com/tsilva/archive-extractor/issues"
+Homepage = "https://github.com/tsilva/archex"
+Repository = "https://github.com/tsilva/archex"
+Issues = "https://github.com/tsilva/archex/issues"
 
 [project.scripts]
-archive-extractor = "archive_extractor:main"
+archex = "archex:main"
 
 [dependency-groups]
 dev = ["pytest>=8.0"]
