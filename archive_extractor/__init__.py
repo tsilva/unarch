@@ -1,4 +1,4 @@
-"""Archive Extractor - Recursively extract ZIP and 7z archives.
+"""Archive Extractor - Recursively extract ZIP, 7z, tar, and RAR archives.
 
 CLI Usage:
     archive-extractor /path/to/search
@@ -27,41 +27,83 @@ Library Usage:
 
 import argparse
 import os
+import tarfile
 import zipfile
-from importlib.metadata import version, PackageNotFoundError
+from collections.abc import Callable
+from importlib.metadata import PackageNotFoundError, version
 
 import py7zr
 from rich.console import Console
 from rich.table import Table
 from rich_argparse import RichHelpFormatter
 
-from .core import (
-    find_archive_files,
-    load_passwords,
-    extract_zip_archive,
-    extract_7z_archive,
-)
+from .core import find_archive_files, load_passwords
+from .zip import extract_zip_archive
+from .sevenz import extract_7z_archive
+from .tar import extract_tar_archive
+from .rar import extract_rar_archive
 
 try:
     __version__ = version("archive-extractor")
 except PackageNotFoundError:
     __version__ = "0.0.0-dev"
 
-__all__ = ["extract_archives", "list_archives", "__version__"]
+__all__ = ["extract_archives", "list_archives", "__version__", "FORMAT_HANDLERS"]
 
 console = Console()
+
+FORMAT_HANDLERS: dict[str, Callable] = {
+    ".zip": extract_zip_archive,
+    ".7z": extract_7z_archive,
+    ".tar": extract_tar_archive,
+    ".tgz": extract_tar_archive,
+    ".tar.gz": extract_tar_archive,
+    ".tar.bz2": extract_tar_archive,
+    ".tbz2": extract_tar_archive,
+    ".tar.xz": extract_tar_archive,
+    ".txz": extract_tar_archive,
+    ".rar": extract_rar_archive,
+}
+
+
+def _get_archive_ext(archive_path: str) -> str | None:
+    """Return the matched extension from FORMAT_HANDLERS, or None."""
+    name_lower = archive_path.lower()
+    # Check compound extensions first (longest match wins)
+    for ext in sorted(FORMAT_HANDLERS.keys(), key=len, reverse=True):
+        if name_lower.endswith(ext):
+            return ext
+    return None
+
+
+def _get_archive_type_label(archive_path: str) -> str:
+    """Return a human-readable archive type label."""
+    ext = _get_archive_ext(archive_path)
+    if ext is None:
+        return "unknown"
+    return ext.lstrip(".")
 
 
 def _count_members(archive_path: str) -> int | None:
     """Count members in an archive without extracting. Returns None on failure."""
-    ext = os.path.splitext(archive_path)[1].lower()
+    ext = _get_archive_ext(archive_path)
     try:
         if ext == ".zip":
             with zipfile.ZipFile(archive_path, "r") as zf:
                 return len([m for m in zf.infolist() if not m.is_dir()])
         elif ext == ".7z":
             with py7zr.SevenZipFile(archive_path, mode="r") as zf:
-                return len(zf.getnames())
+                return len([m for m in zf.list() if not m.is_directory])
+        elif ext in (".tar", ".tgz", ".tar.gz", ".tar.bz2", ".tbz2", ".tar.xz", ".txz"):
+            with tarfile.open(archive_path, "r:*") as tf:
+                return len([m for m in tf.getmembers() if m.isfile()])
+        elif ext == ".rar":
+            try:
+                import rarfile
+                with rarfile.RarFile(archive_path, "r") as rf:
+                    return len([m for m in rf.infolist() if not m.is_dir()])
+            except Exception:
+                return None
     except Exception:
         return None
     return None
@@ -78,9 +120,9 @@ def list_archives(path: str) -> list[dict]:
     """
     results = []
     for archive_path in find_archive_files(path):
-        ext = os.path.splitext(archive_path)[1].lower().lstrip(".")
+        type_label = _get_archive_type_label(archive_path)
         member_count = _count_members(archive_path)
-        results.append({"path": archive_path, "type": ext, "member_count": member_count})
+        results.append({"path": archive_path, "type": type_label, "member_count": member_count})
     return results
 
 
@@ -108,20 +150,32 @@ def extract_archives(
     results = {}
 
     for archive_path in find_archive_files(path):
+        ext = _get_archive_ext(archive_path)
+        if ext is None:
+            continue
+
+        # Determine base name without compound extensions
+        base = archive_path
+        for compound_ext in (".tar.gz", ".tar.bz2", ".tar.xz"):
+            if archive_path.lower().endswith(compound_ext):
+                base = archive_path[: -len(compound_ext)]
+                break
+        else:
+            base = os.path.splitext(archive_path)[0]
+
         if output_dir:
-            archive_name = os.path.splitext(os.path.basename(archive_path))[0]
+            archive_name = os.path.basename(base)
             dest_dir = os.path.join(output_dir, archive_name)
         else:
-            dest_dir = os.path.splitext(archive_path)[0]
+            dest_dir = base
 
-        ext = os.path.splitext(archive_path)[1].lower()
+        handler = FORMAT_HANDLERS[ext]
 
-        if ext == ".zip":
-            count = extract_zip_archive(archive_path, dest_dir, passwords, show_progress, verbose)
-        elif ext == ".7z":
-            count = extract_7z_archive(archive_path, dest_dir, passwords, show_progress, verbose)
+        # Tar archives don't support passwords — don't pass them
+        if ext in (".tar", ".tgz", ".tar.gz", ".tar.bz2", ".tbz2", ".tar.xz", ".txz"):
+            count = handler(archive_path, dest_dir, show_progress=show_progress, verbose=verbose)
         else:
-            continue
+            count = handler(archive_path, dest_dir, passwords=passwords, show_progress=show_progress, verbose=verbose)
 
         results[archive_path] = count
 
@@ -153,14 +207,15 @@ def extract_archives(
 
 def main():
     """CLI entry point for archive-extractor."""
+    supported = ", ".join(sorted(FORMAT_HANDLERS.keys()))
     parser = argparse.ArgumentParser(
         prog="archive-extractor",
-        description="Recursively extract all files from .zip and .7z archives under a given path.",
+        description=f"Recursively extract archives ({supported}) under a given path.",
         formatter_class=RichHelpFormatter,
     )
     parser.add_argument(
         "path",
-        help="Root directory or file to search for .zip/.7z files",
+        help=f"Root directory or file to search for archives ({supported})",
     )
     parser.add_argument(
         "--passwords",

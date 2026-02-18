@@ -1,50 +1,65 @@
-"""Core extraction logic for archive-extractor."""
+"""Core utilities for archive-extractor."""
 
 import os
-import re
-import zipfile
-import lzma
 
-import py7zr
 from rich.console import Console
-from rich.progress import track
 
 console = Console()
 
 
-def sanitize_filename(filename: str) -> str:
-    """Remove directories and illegal characters from a filename.
+def validate_member_path(member_name: str, output_dir: str) -> str | None:
+    """Return safe absolute path for extraction, or None to skip.
 
     Args:
-        filename: The filename to sanitize.
+        member_name: Archive member filename/path.
+        output_dir: Destination directory for extraction.
 
     Returns:
-        A safe filename with illegal characters replaced and path components removed.
+        Safe absolute path string, or None if the path should be skipped.
     """
-    filename = re.sub(r'[\\/*?:"<>|]', "_", filename)
-    filename = filename.replace("..", "")
-    return os.path.basename(filename)
+    normalized = os.path.normpath(member_name)
+    if os.path.isabs(normalized):
+        return None
+    if ".." in normalized.split(os.sep):
+        return None
+    target = os.path.join(output_dir, normalized)
+    target = os.path.realpath(target)
+    if not target.startswith(os.path.realpath(output_dir) + os.sep):
+        return None
+    return target
 
 
-def find_archive_files(root_path: str):
-    """Recursively yield paths to all .zip and .7z files under root_path.
+def find_archive_files(root_path: str, extensions: set[str] | None = None):
+    """Recursively yield paths to archive files under root_path.
 
     Args:
         root_path: Directory to search, or a single archive file path.
+        extensions: Set of lowercase extensions to match (e.g. {'.zip', '.7z'}).
+            If None, all supported extensions are used.
 
     Yields:
         Absolute paths to archive files found.
     """
+    from archive_extractor import FORMAT_HANDLERS
+
+    if extensions is None:
+        extensions = set(FORMAT_HANDLERS.keys())
+
     if os.path.isfile(root_path):
-        ext = os.path.splitext(root_path)[1].lower()
-        if ext in ('.zip', '.7z'):
-            yield root_path
+        name_lower = root_path.lower()
+        for ext in extensions:
+            if name_lower.endswith(ext):
+                yield root_path
+                return
         return
 
     for dirpath, _, filenames in os.walk(root_path):
         for fname in filenames:
-            if fname.lower().endswith('.zip') or fname.lower().endswith('.7z'):
-                yield os.path.join(dirpath, fname)
+            fname_lower = fname.lower()
+            for ext in extensions:
+                if fname_lower.endswith(ext):
+                    yield os.path.join(dirpath, fname)
+                    break
 
 
 def load_passwords(password_file: str) -> list[str]:
@@ -58,116 +73,3 @@ def load_passwords(password_file: str) -> list[str]:
     """
     with open(password_file, 'r', encoding='utf-8') as f:
         return [line.strip() for line in f if line.strip()]
-
-
-def extract_zip_archive(
-    zip_file: str,
-    output_dir: str,
-    passwords: list[str] | None = None,
-    show_progress: bool = True,
-    verbose: bool = False,
-) -> int:
-    """Extract a ZIP archive to the specified directory.
-
-    Args:
-        zip_file: Path to the ZIP file.
-        output_dir: Directory to extract files to.
-        passwords: Optional list of passwords to try for encrypted archives.
-        show_progress: Whether to show rich progress bar.
-        verbose: Whether to print each extracted file path.
-
-    Returns:
-        Number of files extracted, or -1 on failure.
-    """
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-
-    with zipfile.ZipFile(zip_file, 'r') as zf:
-        members = zf.infolist()
-        extracted_count = 0
-
-        def extract_members(pwd_bytes=None):
-            nonlocal extracted_count
-            iterator = track(members, description=f"Extracting {os.path.basename(zip_file)}", transient=True) if show_progress else members
-            for member in iterator:
-                if member.is_dir():
-                    continue
-                safe_member_path = os.path.normpath(member.filename)
-                if os.path.isabs(safe_member_path) or safe_member_path.startswith(".."):
-                    continue
-                out_path = os.path.join(output_dir, safe_member_path)
-                out_dir = os.path.dirname(out_path)
-                if not os.path.exists(out_dir):
-                    os.makedirs(out_dir)
-                with open(out_path, 'wb') as f:
-                    f.write(zf.read(member, pwd_bytes))
-                extracted_count += 1
-                if verbose:
-                    console.print(f"  [dim]{safe_member_path}[/dim]")
-
-        if not passwords:
-            try:
-                extract_members()
-                return extracted_count
-            except RuntimeError:
-                return -1
-        else:
-            for pwd in passwords:
-                extracted_count = 0
-                try:
-                    extract_members(pwd.encode('utf-8'))
-                    return extracted_count
-                except RuntimeError:
-                    continue
-                except zipfile.BadZipFile:
-                    continue
-            return -1
-
-
-def extract_7z_archive(
-    archive_file: str,
-    output_dir: str,
-    passwords: list[str] | None = None,
-    show_progress: bool = True,
-    verbose: bool = False,
-) -> int:
-    """Extract a 7z archive to the specified directory.
-
-    Args:
-        archive_file: Path to the 7z file.
-        output_dir: Directory to extract files to.
-        passwords: Optional list of passwords to try for encrypted archives.
-        show_progress: Whether to show progress (currently unused for 7z).
-        verbose: Whether to print each extracted file path.
-
-    Returns:
-        Number of files extracted, or -1 on failure.
-    """
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-
-    def try_extract(password=None):
-        with py7zr.SevenZipFile(archive_file, mode='r', password=password) as archive:
-            names = archive.getnames()
-            archive.extractall(path=output_dir)
-            if verbose:
-                for name in names:
-                    console.print(f"  [dim]{name}[/dim]")
-            return len(names)
-
-    if not passwords:
-        try:
-            return try_extract()
-        except (py7zr.exceptions.PasswordRequired, py7zr.exceptions.Bad7zFile, lzma.LZMAError):
-            return -1
-        except Exception:
-            return -1
-    else:
-        for pwd in passwords:
-            try:
-                return try_extract(pwd)
-            except (py7zr.exceptions.PasswordRequired, py7zr.exceptions.Bad7zFile, lzma.LZMAError):
-                continue
-            except Exception:
-                continue
-        return -1
