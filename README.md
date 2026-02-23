@@ -16,6 +16,8 @@
 
 ## Features
 
+[![CI](https://github.com/tsilva/archex/actions/workflows/release.yml/badge.svg)](https://github.com/tsilva/archex/actions/workflows/release.yml)
+
 - **Recursive discovery** — finds all supported archives in a directory tree
 - **Password list support** — tries passwords from a wordlist for encrypted ZIP, 7z, and RAR archives
 - **Path traversal protection** — rejects absolute paths and `..` sequences uniformly across all formats
