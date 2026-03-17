@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/tsilva/archex/main/logo.png" alt="unarch" width="512" />
+  <img src="https://raw.githubusercontent.com/tsilva/unarch/main/logo.png" alt="unarch" width="512" />
 </p>
 
 <h1 align="center">unarch</h1>
@@ -11,12 +11,12 @@
 <p align="center">
   <a href="https://pypi.org/project/unarch/"><img src="https://img.shields.io/pypi/v/unarch" alt="PyPI version"/></a>
   <a href="https://pypi.org/project/unarch/"><img src="https://img.shields.io/pypi/pyversions/unarch" alt="Python versions"/></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/tsilva/archex" alt="License"/></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/tsilva/unarch" alt="License"/></a>
 </p>
 
 ## Features
 
-[![CI](https://github.com/tsilva/archex/actions/workflows/release.yml/badge.svg)](https://github.com/tsilva/archex/actions/workflows/release.yml)
+[![CI](https://github.com/tsilva/unarch/actions/workflows/release.yml/badge.svg)](https://github.com/tsilva/unarch/actions/workflows/release.yml)
 
 - **Recursive discovery** — finds all supported archives in a directory tree
 - **Password list support** — tries passwords from a wordlist for encrypted ZIP, 7z, and RAR archives

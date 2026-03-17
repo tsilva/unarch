@@ -35,9 +35,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/tsilva/archex"
-Repository = "https://github.com/tsilva/archex"
-Issues = "https://github.com/tsilva/archex/issues"
+Homepage = "https://github.com/tsilva/unarch"
+Repository = "https://github.com/tsilva/unarch"
+Issues = "https://github.com/tsilva/unarch/issues"
 
 [project.scripts]
 unarch = "unarch:main"
