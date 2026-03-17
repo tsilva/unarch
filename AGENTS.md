@@ -8,24 +8,24 @@ Archive Extractor is a Python library and CLI tool that recursively searches for
 
 ## Architecture
 
-This is a Python package (`archex/`) with the following structure:
+This is a Python package (`unarch/`) with the following structure:
 
-- **`archex/__init__.py`**: Public API, CLI entry point, and `FORMAT_HANDLERS` registry
+- **`unarch/__init__.py`**: Public API, CLI entry point, and `FORMAT_HANDLERS` registry
   - `FORMAT_HANDLERS`: Dict mapping file extensions to extractor callables
   - `extract_archives()`: Main library function for programmatic use
   - `list_archives()`: Dry-run archive discovery (no extraction)
   - `__version__`: Package version string from importlib.metadata
   - `main()`: CLI entry point for command-line usage
-- **`archex/__main__.py`**: Enables `python -m archex`
-- **`archex/core.py`**: Shared utilities
+- **`unarch/__main__.py`**: Enables `python -m unarch`
+- **`unarch/core.py`**: Shared utilities
   - `validate_member_path()`: Unified path traversal prevention (used by all extractors)
   - `find_archive_files()`: Archive discovery generator (uses FORMAT_HANDLERS keys)
   - `load_passwords()`: Password file parsing
-- **`archex/zip.py`**: ZIP extractor — password support, per-member validation
-- **`archex/sevenz.py`**: 7z extractor — two-pass (list+validate, then extract), password support
-- **`archex/tar.py`**: Tar extractor — .tar/.tar.gz/.tgz/.tar.bz2/.tbz2/.tar.xz/.txz, symlink skipping
-- **`archex/rar.py`**: RAR extractor — requires `rarfile` package + `unrar` binary, password support
-- **`archex/py.typed`**: PEP 561 marker for type-checker support
+- **`unarch/zip.py`**: ZIP extractor — password support, per-member validation
+- **`unarch/sevenz.py`**: 7z extractor — two-pass (list+validate, then extract), password support
+- **`unarch/tar.py`**: Tar extractor — .tar/.tar.gz/.tgz/.tar.bz2/.tbz2/.tar.xz/.txz, symlink skipping
+- **`unarch/rar.py`**: RAR extractor — requires `rarfile` package + `unrar` binary, password support
+- **`unarch/py.typed`**: PEP 561 marker for type-checker support
 
 ## Key Dependencies
 
@@ -73,10 +73,10 @@ uv tool install .
 
 **Run directly**:
 ```bash
-python -m archex /path/to/search
-python -m archex /path/to/search --passwords passwords.txt
-python -m archex --dry-run /path/to/search
-python -m archex -v /path/to/search
+python -m unarch /path/to/search
+python -m unarch /path/to/search --passwords passwords.txt
+python -m unarch --dry-run /path/to/search
+python -m unarch -v /path/to/search
 ```
 
 **Install in editable mode for development**:
@@ -86,7 +86,7 @@ uv pip install -e .
 
 **Library usage**:
 ```python
-from archex import extract_archives, list_archives, __version__
+from unarch import extract_archives, list_archives, __version__
 print(__version__)
 archives = list_archives("/path/to/search")
 results = extract_archives("/path/to/search", passwords=["pass1", "pass2"])

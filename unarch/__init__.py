@@ -1,13 +1,13 @@
-"""archex - Recursively extract ZIP, 7z, tar, and RAR archives.
+"""unarch - Recursively extract ZIP, 7z, tar, and RAR archives.
 
 CLI Usage:
-    archex /path/to/search
-    archex /path/to/search --passwords passwords.txt
-    archex --dry-run /path/to/search
-    archex -v /path/to/search
+    unarch /path/to/search
+    unarch /path/to/search --passwords passwords.txt
+    unarch --dry-run /path/to/search
+    unarch -v /path/to/search
 
 Library Usage:
-    from archex import extract_archives, list_archives
+    from unarch import extract_archives, list_archives
 
     # Extract all archives in a directory
     results = extract_archives("/path/to/search")
@@ -38,13 +38,14 @@ from rich.table import Table
 from rich_argparse import RichHelpFormatter
 
 from .core import find_archive_files, load_passwords
-from .zip import extract_zip_archive
+from .compressed import extract_compressed_file
+from .rar import extract_rar_archive
 from .sevenz import extract_7z_archive
 from .tar import extract_tar_archive
-from .rar import extract_rar_archive
+from .zip import extract_zip_archive
 
 try:
-    __version__ = version("archex")
+    __version__ = version("unarch")
 except PackageNotFoundError:
     __version__ = "0.0.0-dev"
 
@@ -60,8 +61,12 @@ FORMAT_HANDLERS: dict[str, Callable] = {
     ".tar.gz": extract_tar_archive,
     ".tar.bz2": extract_tar_archive,
     ".tbz2": extract_tar_archive,
+    ".tbz": extract_tar_archive,
     ".tar.xz": extract_tar_archive,
     ".txz": extract_tar_archive,
+    ".gz": extract_compressed_file,
+    ".bz2": extract_compressed_file,
+    ".xz": extract_compressed_file,
     ".rar": extract_rar_archive,
 }
 
@@ -94,9 +99,11 @@ def _count_members(archive_path: str) -> int | None:
         elif ext == ".7z":
             with py7zr.SevenZipFile(archive_path, mode="r") as zf:
                 return len([m for m in zf.list() if not m.is_directory])
-        elif ext in (".tar", ".tgz", ".tar.gz", ".tar.bz2", ".tbz2", ".tar.xz", ".txz"):
+        elif ext in (".tar", ".tgz", ".tar.gz", ".tar.bz2", ".tbz2", ".tbz", ".tar.xz", ".txz"):
             with tarfile.open(archive_path, "r:*") as tf:
                 return len([m for m in tf.getmembers() if m.isfile()])
+        elif ext in (".gz", ".bz2", ".xz"):
+            return 1
         elif ext == ".rar":
             try:
                 import rarfile
@@ -126,12 +133,22 @@ def list_archives(path: str) -> list[dict]:
     return results
 
 
+def _base_without_archive_extension(archive_path: str) -> str:
+    """Return the path without the matched archive extension."""
+    ext = _get_archive_ext(archive_path)
+    if ext is None:
+        return archive_path
+    return archive_path[: -len(ext)]
+
+
 def extract_archives(
     path: str,
     output_dir: str | None = None,
     passwords: list[str] | None = None,
     show_progress: bool = True,
     verbose: bool = False,
+    output_suffix: str = "",
+    skip_existing: bool = False,
 ) -> dict[str, int]:
     """Extract all archives found at the given path.
 
@@ -142,6 +159,9 @@ def extract_archives(
         passwords: Optional list of password strings to try for encrypted archives.
         show_progress: Whether to show progress bars during extraction.
         verbose: Whether to print each extracted file path.
+        output_suffix: Optional suffix appended to each output directory name.
+        skip_existing: If True, return 0 for archives whose output directory already
+            exists and is non-empty.
 
     Returns:
         Dictionary mapping archive paths to extraction counts.
@@ -154,25 +174,27 @@ def extract_archives(
         if ext is None:
             continue
 
-        # Determine base name without compound extensions
-        base = archive_path
-        for compound_ext in (".tar.gz", ".tar.bz2", ".tar.xz"):
-            if archive_path.lower().endswith(compound_ext):
-                base = archive_path[: -len(compound_ext)]
-                break
-        else:
-            base = os.path.splitext(archive_path)[0]
+        base = _base_without_archive_extension(archive_path)
 
         if output_dir:
-            archive_name = os.path.basename(base)
+            archive_name = os.path.basename(base) + output_suffix
             dest_dir = os.path.join(output_dir, archive_name)
         else:
-            dest_dir = base
+            dest_dir = base + output_suffix
+
+        if skip_existing and os.path.isdir(dest_dir):
+            try:
+                has_entries = next(os.scandir(dest_dir), None) is not None
+            except OSError:
+                has_entries = False
+            if has_entries:
+                results[archive_path] = 0
+                continue
 
         handler = FORMAT_HANDLERS[ext]
 
         # Tar archives don't support passwords — don't pass them
-        if ext in (".tar", ".tgz", ".tar.gz", ".tar.bz2", ".tbz2", ".tar.xz", ".txz"):
+        if ext in (".tar", ".tgz", ".tar.gz", ".tar.bz2", ".tbz2", ".tbz", ".tar.xz", ".txz"):
             count = handler(archive_path, dest_dir, show_progress=show_progress, verbose=verbose)
         else:
             count = handler(archive_path, dest_dir, passwords=passwords, show_progress=show_progress, verbose=verbose)
@@ -206,10 +228,10 @@ def extract_archives(
 
 
 def main():
-    """CLI entry point for archex."""
+    """CLI entry point for unarch."""
     supported = ", ".join(sorted(FORMAT_HANDLERS.keys()))
     parser = argparse.ArgumentParser(
-        prog="archex",
+        prog="unarch",
         description=f"Recursively extract archives ({supported}) under a given path.",
         formatter_class=RichHelpFormatter,
     )

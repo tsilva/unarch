@@ -1,4 +1,4 @@
-"""7z archive extraction for archex."""
+"""7z archive extraction for unarch."""
 
 import lzma
 import os

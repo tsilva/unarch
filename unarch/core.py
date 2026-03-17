@@ -1,4 +1,4 @@
-"""Core utilities for archex."""
+"""Core utilities for unarch."""
 
 import os
 
@@ -40,7 +40,7 @@ def find_archive_files(root_path: str, extensions: set[str] | None = None):
     Yields:
         Absolute paths to archive files found.
     """
-    from archex import FORMAT_HANDLERS
+    from unarch import FORMAT_HANDLERS
 
     if extensions is None:
         extensions = set(FORMAT_HANDLERS.keys())

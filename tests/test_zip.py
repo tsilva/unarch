@@ -4,7 +4,7 @@ import os
 
 import pytest
 
-from archex.zip import extract_zip_archive
+from unarch.zip import extract_zip_archive
 
 
 class TestZipExtraction:

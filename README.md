@@ -1,16 +1,16 @@
 <p align="center">
-  <img src="logo.png" alt="archex" width="512" />
+  <img src="https://raw.githubusercontent.com/tsilva/archex/main/logo.png" alt="unarch" width="512" />
 </p>
 
-<h1 align="center">archex</h1>
+<h1 align="center">unarch</h1>
 
 <p align="center">
-  Recursively extract ZIP, 7z, tar, and RAR archives from directory trees, with password support
+  Recursively extract ZIP, 7z, tar, RAR, and single-file compressed archives from directory trees
 </p>
 
 <p align="center">
-  <a href="https://pypi.org/project/archex/"><img src="https://img.shields.io/pypi/v/archex" alt="PyPI version"/></a>
-  <a href="https://pypi.org/project/archex/"><img src="https://img.shields.io/pypi/pyversions/archex" alt="Python versions"/></a>
+  <a href="https://pypi.org/project/unarch/"><img src="https://img.shields.io/pypi/v/unarch" alt="PyPI version"/></a>
+  <a href="https://pypi.org/project/unarch/"><img src="https://img.shields.io/pypi/pyversions/unarch" alt="Python versions"/></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/tsilva/archex" alt="License"/></a>
 </p>
 
@@ -22,15 +22,17 @@
 - **Password list support** — tries passwords from a wordlist for encrypted ZIP, 7z, and RAR archives
 - **Path traversal protection** — rejects absolute paths and `..` sequences uniformly across all formats
 - **Folder structure preservation** — extracts each archive into its own named subfolder
+- **Single-file compression support** — extracts `.gz`, `.bz2`, and `.xz` payloads without shelling out
 - **Custom output directory** — extract to a location separate from the source tree
+- **Configurable output naming** — append a suffix and skip archives whose destination is already populated
 - **Rich progress output** — styled progress indicators and results tables via `rich`
 - **Library API** — use programmatically in your own Python projects
 
 ## Quick Start
 
 ```bash
-pip install archex
-archex /path/to/search
+pip install unarch
+unarch /path/to/search
 ```
 
 ## Installation
@@ -38,19 +40,19 @@ archex /path/to/search
 Install with `pip`:
 
 ```bash
-pip install archex
+pip install unarch
 ```
 
 Install as an isolated CLI tool with [pipx](https://pipx.pypa.io/):
 
 ```bash
-pipx install archex
+pipx install unarch
 ```
 
 Install with [uv](https://docs.astral.sh/uv/):
 
 ```bash
-uv tool install archex
+uv tool install unarch
 ```
 
 ### RAR Support
@@ -68,7 +70,7 @@ apt install unrar
 ## CLI Reference
 
 ```
-archex [OPTIONS] PATH
+unarch [OPTIONS] PATH
 ```
 
 | Flag | Short | Description |
@@ -84,28 +86,28 @@ archex [OPTIONS] PATH
 
 ```bash
 # Preview archives before extracting
-archex --dry-run /path/to/search
+unarch --dry-run /path/to/search
 
 # Extract with a password wordlist
-archex /path/to/search --passwords passwords.txt
+unarch /path/to/search --passwords passwords.txt
 
 # Extract to a custom output directory
-archex /path/to/search --output-dir /path/to/output
+unarch /path/to/search --output-dir /path/to/output
 
 # Verbose extraction showing each file
-archex -v /path/to/search
+unarch -v /path/to/search
 
 # Quiet mode (no output)
-archex -q /path/to/search
+unarch -q /path/to/search
 
 # Show version
-archex --version
+unarch --version
 ```
 
 ## Library Usage
 
 ```python
-from archex import extract_archives, list_archives, __version__
+from unarch import extract_archives, list_archives, __version__
 
 # List archives without extracting
 archives = list_archives("/path/to/search")
@@ -119,6 +121,14 @@ results = extract_archives("/path/to/search", passwords=["pass1", "pass2"])
 
 # Extract to a custom output directory
 results = extract_archives("/path/to/search", output_dir="/path/to/output")
+
+# Match existing destination naming conventions
+results = extract_archives(
+    "/path/to/search",
+    output_dir="/path/to/output",
+    output_suffix="_archive",
+    skip_existing=True,
+)
 ```
 
 `extract_archives()` returns a dictionary mapping archive paths to extracted file counts. A count of `-1` indicates failure.
@@ -131,13 +141,16 @@ results = extract_archives("/path/to/search", output_dir="/path/to/output")
 | `.7z` | 7-Zip | Yes | py7zr |
 | `.tar` | Tar | No | stdlib |
 | `.tar.gz`, `.tgz` | Tar + Gzip | No | stdlib |
-| `.tar.bz2`, `.tbz2` | Tar + Bzip2 | No | stdlib |
+| `.tar.bz2`, `.tbz2`, `.tbz` | Tar + Bzip2 | No | stdlib |
 | `.tar.xz`, `.txz` | Tar + XZ | No | stdlib |
+| `.gz` | Gzip-compressed file | No | stdlib |
+| `.bz2` | Bzip2-compressed file | No | stdlib |
+| `.xz` | XZ-compressed file | No | stdlib |
 | `.rar` | RAR | Yes | rarfile + unrar |
 
 ## Security
 
-`archex` enforces path safety uniformly across all formats via `validate_member_path()`:
+`unarch` enforces path safety uniformly across all formats via `validate_member_path()`:
 
 - **Absolute path rejection** — skips members with absolute paths (e.g. `/etc/passwd`)
 - **Traversal detection** — rejects any path containing `..` components

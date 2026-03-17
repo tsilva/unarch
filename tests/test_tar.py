@@ -4,7 +4,7 @@ import os
 
 import pytest
 
-from archex.tar import extract_tar_archive
+from unarch.tar import extract_tar_archive
 
 
 class TestTarExtraction:

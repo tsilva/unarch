@@ -7,9 +7,9 @@ import pytest
 
 
 def run_cli(*args, **kwargs):
-    """Run the archex CLI as a subprocess."""
+    """Run the unarch CLI as a subprocess."""
     return subprocess.run(
-        [sys.executable, "-m", "archex", *args],
+        [sys.executable, "-m", "unarch", *args],
         capture_output=True,
         text=True,
         **kwargs,
@@ -20,7 +20,7 @@ class TestCLI:
     def test_version_flag(self):
         result = run_cli("--version")
         assert result.returncode == 0
-        assert "archex" in result.stdout or "archex" in result.stderr
+        assert "unarch" in result.stdout or "unarch" in result.stderr
 
     def test_version_short_flag(self):
         result = run_cli("-V")
