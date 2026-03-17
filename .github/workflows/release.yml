@@ -18,7 +18,7 @@ jobs:
           python-version: "3.12"
       - uses: astral-sh/setup-uv@v7
         with:
-          cache: true
+          enable-cache: true
       - run: uv sync --group dev
       - run: uv run --group dev pytest tests/ -v
 
@@ -41,7 +41,7 @@ jobs:
         if: steps.check-version.outputs.tag_exists == 'false'
         uses: astral-sh/setup-uv@v7
         with:
-          cache: true
+          enable-cache: true
       - name: Build package
         if: steps.check-version.outputs.tag_exists == 'false'
         run: uv build
