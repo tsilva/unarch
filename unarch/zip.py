@@ -1,4 +1,4 @@
-"""ZIP archive extraction for archex."""
+"""ZIP archive extraction for unarch."""
 
 import os
 import zipfile

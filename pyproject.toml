@@ -3,9 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "archex"
-version = "0.4.0"
-description = "Recursively extract ZIP, 7z, tar, and RAR archives from directory trees, with password list support"
+name = "unarch"
+version = "0.6.0"
+description = "Recursively extract ZIP, 7z, tar, RAR, and single-file compressed archives from directory trees"
 authors = [
     { name = "Tiago Silva", email = "eng.tiago.silva@gmail.com" }
 ]
@@ -40,10 +40,13 @@ Repository = "https://github.com/tsilva/archex"
 Issues = "https://github.com/tsilva/archex/issues"
 
 [project.scripts]
-archex = "archex:main"
+unarch = "unarch:main"
 
 [dependency-groups]
 dev = ["pytest>=8.0"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["unarch"]
 
 [tool.ruff]
 line-length = 100

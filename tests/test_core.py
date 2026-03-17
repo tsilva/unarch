@@ -1,10 +1,13 @@
-"""Tests for archex.core module."""
+"""Tests for unarch.core module."""
 
+import gzip
+import io
 import os
+import tarfile
 
 import pytest
 
-from archex.core import validate_member_path, find_archive_files, load_passwords
+from unarch.core import validate_member_path, find_archive_files, load_passwords
 
 
 class TestValidateMemberPath:
@@ -53,6 +56,25 @@ class TestFindArchiveFiles:
     def test_finds_tar_gz_in_directory(self, simple_tar, tmp_archives):
         found = list(find_archive_files(str(tmp_archives)))
         assert any(f.endswith(".tar.gz") for f in found)
+
+    def test_finds_single_file_gz_in_directory(self, tmp_archives):
+        gz_path = tmp_archives / "single.txt.gz"
+        with gzip.open(gz_path, "wb") as handle:
+            handle.write(b"hello")
+
+        found = list(find_archive_files(str(tmp_archives)))
+        assert any(f.endswith(".txt.gz") for f in found)
+
+    def test_finds_tbz_in_directory(self, tmp_archives):
+        tbz_path = tmp_archives / "bundle.tbz"
+        with tarfile.open(str(tbz_path), "w:bz2") as handle:
+            info = tarfile.TarInfo("hello.txt")
+            data = b"hello"
+            info.size = len(data)
+            handle.addfile(info, io.BytesIO(data))
+
+        found = list(find_archive_files(str(tmp_archives)))
+        assert any(f.endswith(".tbz") for f in found)
 
     def test_single_file_zip(self, simple_zip):
         found = list(find_archive_files(simple_zip))

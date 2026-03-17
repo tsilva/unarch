@@ -16,7 +16,7 @@ class TestRarExtraction:
 
         monkeypatch.setattr(builtins, "__import__", mock_import)
 
-        from archex.rar import extract_rar_archive
+        from unarch.rar import extract_rar_archive
         result = extract_rar_archive("fake.rar", str(tmp_path), show_progress=False)
         assert result == -1
 
