@@ -43,7 +43,9 @@ Issues = "https://github.com/tsilva/archex/issues"
 unarch = "unarch:main"
 
 [dependency-groups]
-dev = ["pytest>=8.0"]
+dev = [
+    "pytest>=8.0",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["unarch"]
