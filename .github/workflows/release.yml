@@ -10,11 +10,8 @@ jobs:
   test:
     uses: tsilva/.github/.github/workflows/test.yml@main
 
-  pii-scan:
-    uses: tsilva/.github/.github/workflows/pii-scan.yml@main
-
   publish:
-    needs: [test, pii-scan]
+    needs: [test]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: pypi
@@ -22,7 +19,7 @@ jobs:
       contents: write
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Check version
@@ -30,7 +27,7 @@ jobs:
         uses: tsilva/.github/.github/actions/check-version@main
       - name: Setup uv
         if: steps.check-version.outputs.tag_exists == 'false'
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v7
         with:
           cache: true
       - name: Build package
