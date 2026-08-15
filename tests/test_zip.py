@@ -1,8 +1,6 @@
 """Tests for ZIP archive extraction."""
 
-import os
 
-import pytest
 
 from unarch.zip import extract_zip_archive
 

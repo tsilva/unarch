@@ -39,7 +39,11 @@ def extract_7z_archive(
     def try_extract(password=None) -> int:
         # Pass 1: list members for security validation (read-only, cheap)
         with py7zr.SevenZipFile(archive_file, mode='r', password=password) as archive:
-            all_members = [m for m in archive.list() if not m.is_directory]
+            all_members = [
+                member
+                for member in archive.list()
+                if not member.is_directory and not getattr(member, "is_symlink", False)
+            ]
 
         # Validate each member path before extraction
         safe_names = [

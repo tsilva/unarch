@@ -37,8 +37,8 @@ from rich.console import Console
 from rich.table import Table
 from rich_argparse import RichHelpFormatter
 
-from .core import find_archive_files, load_passwords
 from .compressed import extract_compressed_file
+from .core import find_archive_files, load_passwords
 from .rar import extract_rar_archive
 from .sevenz import extract_7z_archive
 from .tar import extract_tar_archive

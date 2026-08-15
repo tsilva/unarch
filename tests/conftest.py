@@ -1,7 +1,6 @@
 """Shared test fixtures for unarch tests."""
 
 import io
-import os
 import tarfile
 import zipfile
 

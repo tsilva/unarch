@@ -1,8 +1,6 @@
 """Tests for tar archive extraction."""
 
-import os
 
-import pytest
 
 from unarch.tar import extract_tar_archive
 

@@ -8,7 +8,7 @@
 
 `unarch` is a Python library and CLI for finding archives under a path and extracting each one into its own output folder. It supports dry runs, password wordlists, custom output directories, quiet/verbose terminal output, and programmatic use from Python.
 
-The extractor validates archive member paths before writing files so absolute paths, `..` traversal, tar links, and unsafe 7z members do not escape the destination directory.
+The extractor validates archive member paths before writing files so absolute paths, `..` traversal, tar links, and unsafe 7z members do not escape the destination directory. 7z symbolic-link members are skipped, and `py7zr>=1.1.3` provides the upstream symlink-chain, extraction-size, and parser-complexity fixes.
 
 ## Install
 
@@ -29,7 +29,8 @@ For local development:
 ```bash
 git clone https://github.com/tsilva/unarch.git
 cd unarch
-uv run --group dev pytest tests/ -v
+uv sync --config-file uv.toml --frozen --all-groups
+uv run --frozen pytest tests/ -v
 ```
 
 ## Commands
@@ -42,7 +43,7 @@ unarch --output-dir extracted PATH  # write outputs under a custom directory
 unarch -v PATH                      # print each extracted file
 unarch -q PATH                      # suppress terminal output
 unarch --version                    # print the installed version
-uv run --group dev pytest tests/ -v # run the test suite
+uv run --frozen pytest tests/ -v    # run the test suite
 ```
 
 ## Library

@@ -1,8 +1,6 @@
 """Tests for 7z archive extraction."""
 
-import os
 
-import pytest
 
 from unarch.sevenz import extract_7z_archive
 

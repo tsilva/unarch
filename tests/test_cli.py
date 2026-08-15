@@ -3,8 +3,6 @@
 import subprocess
 import sys
 
-import pytest
-
 
 def run_cli(*args, **kwargs):
     """Run the unarch CLI as a subprocess."""

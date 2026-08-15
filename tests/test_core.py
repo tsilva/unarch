@@ -5,9 +5,7 @@ import io
 import os
 import tarfile
 
-import pytest
-
-from unarch.core import validate_member_path, find_archive_files, load_passwords
+from unarch.core import find_archive_files, load_passwords, validate_member_path
 
 
 class TestValidateMemberPath:
