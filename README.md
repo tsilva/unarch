@@ -1,10 +1,12 @@
-<div align="center">
+<p align="center">
   <img src="./logo.png" alt="unarch" width="420" />
+  <br />
+  <!-- repo-tagline:start -->
+  <strong>📦 Extract nested archives from entire directory trees 🔓</strong>
+  <!-- repo-tagline:end -->
+</p>
 
-  <h1>unarch</h1>
-
-  **Recursively extract ZIP, 7z, tar, RAR, and single-file compressed archives from directory trees**
-</div>
+**Recursively extract ZIP, 7z, tar, RAR, and single-file compressed archives from directory trees**
 
 `unarch` is a Python library and CLI for finding archives under a path and extracting each one into its own output folder. It supports dry runs, password wordlists, custom output directories, quiet/verbose terminal output, and programmatic use from Python.
 
