@@ -35,6 +35,10 @@ uv sync --config-file uv.toml --frozen --all-groups
 uv run --frozen pytest tests/ -v
 ```
 
+Dependency resolution keeps the seven-day release-age setting in `uv.toml` and
+the security constraints in `[tool.uv]` in `pyproject.toml`. Keep both files with
+the committed `uv.lock` when updating dependencies.
+
 ## Commands
 
 ```bash
