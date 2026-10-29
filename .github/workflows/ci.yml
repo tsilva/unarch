@@ -40,7 +40,7 @@ jobs:
       - name: Test archive security and behavior
         run: uv run --frozen pytest tests/ -q
       - name: Audit the locked environment
-        run: uv run --frozen pip-audit
+        run: uv audit --frozen
       - name: Import and CLI smoke tests
         run: |
           uv run --frozen python -c "import py7zr, pygments, unarch"

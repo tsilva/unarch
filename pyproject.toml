@@ -45,7 +45,6 @@ unarch = "unarch:main"
 
 [dependency-groups]
 dev = [
-    "pip-audit>=2.9.0,<3",
     "pytest>=9.0.3,<10",
     "ruff>=0.16.1",
 ]
@@ -64,8 +63,10 @@ select = ["E", "F", "I"]
 constraint-dependencies = [
   "py7zr>=1.1.3",
   "pygments>=2.20.0",
-  "pip-audit>=2.9.0",
   "pytest>=9.0.3",
   "mistralai!=2.4.6",
   "guardrails-ai!=0.10.1",
+  "brotli>=1.2.1",
+  "brotlicffi>=1.2.1.0",
+  "certifi>=2026.10.19",
 ]

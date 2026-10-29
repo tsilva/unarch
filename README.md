@@ -36,7 +36,9 @@ uv run --frozen pytest tests/ -v
 ```
 
 Dependency resolution keeps the seven-day release-age setting in `uv.toml` and
-the security constraints in `[tool.uv]` in `pyproject.toml`. Keep both files with
+the security constraints in `[tool.uv]` in `pyproject.toml`. The lock includes patched Brotli decoding. CI uses `uv audit --frozen` to audit the
+complete lock without the former pip-audit development dependency, preserving
+Python 3.10 support. Keep both files with
 the committed `uv.lock` when updating dependencies.
 
 ## Commands
@@ -50,6 +52,7 @@ unarch -v PATH                      # print each extracted file
 unarch -q PATH                      # suppress terminal output
 unarch --version                    # print the installed version
 uv run --frozen pytest tests/ -v    # run the test suite
+uv audit --frozen                   # audit all locked dependency versions
 ```
 
 ## Library
